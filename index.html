@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For My Gurl ❤️</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Nunito:wght@400;600;800&family=Fira+Code&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff4d6d',
+                        secondary: '#ff8fa3',
+                        dark: '#590d22',
+                        surface: '#ffffff',
+                        bg: '#fff0f3',
+                        ionic: '#f4f5f8'
+                    },
+                    fontFamily: {
+                        sans: ['Nunito', 'sans-serif'],
+                        script: ['Dancing Script', 'cursive'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    boxShadow: {
+                        'ionic': '0 4px 16px rgba(0, 0, 0, 0.08)',
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.15)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="text-gray-800 antialiased">
+
+    <!-- Chuss Popup (Fixed Overlay) -->
+    <div id="chussPopup"
+        class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 scale-0 bg-white border-4 border-primary text-primary px-8 py-4 rounded-full shadow-2xl text-4xl font-bold whitespace-nowrap">
+        Chuss 😝
+    </div>
+
+    <!-- STAGE 1: GAME -->
+    <section id="stage-game" class="stage active">
+        <div class="glass-card p-6 sm:p-8 rounded-3xl shadow-ionic max-w-sm sm:max-w-md text-center relative z-10">
+            <div class="mb-4">
+                <h2 class="font-script text-3xl sm:text-4xl text-primary mb-1">Collect Hearts</h2>
+                <p class="text-sm text-gray-500 font-sans">Swipe or use arrows to win her heart</p>
+            </div>
+
+            <div id="gameCanvasContainer"
+                class="relative mx-auto border-4 border-primary/20 rounded-xl overflow-hidden bg-white shadow-inner">
+                <canvas id="gameCanvas"></canvas>
+                <div class="absolute top-2 right-2 bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm">
+                    ❤️ <span id="scoreVal">0</span>/10
+                </div>
+            </div>
+
+            <!-- Mobile D-Pad Controls (Visible on mobile) -->
+            <div id="mobileControls" class="mx-auto block lg:hidden">
+                <button id="upBtn" onclick="setDirection(0, -1)">▲</button>
+                <div class="dpad-center"></div>
+                <button id="leftBtn" onclick="setDirection(-1, 0)">◀</button>
+                <button id="rightBtn" onclick="setDirection(1, 0)">▶</button>
+                <button id="downBtn" onclick="setDirection(0, 1)">▼</button>
+            </div>
+
+            <div class="mt-4 flex justify-center space-x-4 text-gray-400 text-xs">
+                <span>⬆️ Up</span>
+                <span>⬇️ Down</span>
+                <span>⬅️ Left</span>
+                <span>➡️ Right</span>
+            </div>
+        </div>
+
+        <!-- Decorative background blobs -->
+        <div
+            class="absolute top-10 left-0 w-32 h-32 sm:w-64 sm:h-64 bg-primary/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob">
+        </div>
+        <div
+            class="absolute bottom-10 right-0 w-32 h-32 sm:w-64 sm:h-64 bg-secondary/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000">
+        </div>
+    </section>
+
+    <!-- STAGE 2: QUIZ -->
+    <section id="stage-quiz" class="stage">
+        <div
+            class="glass-card p-6 sm:p-8 rounded-3xl shadow-ionic max-w-sm sm:max-w-md relative z-10 transform transition-all">
+            <div class="text-center mb-6">
+                <div
+                    class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+                    🧠</div>
+                <h2 class="font-script text-3xl text-dark">Java Love Quiz</h2>
+                <p class="text-xs text-gray-500 mt-1">Prove your intelligence!</p>
+            </div>
+
+            <div id="quizContent">
+                <h3 id="qText" class="text-lg font-bold text-gray-800 mb-6 text-center leading-tight min-h-[3rem]">
+                    Loading...</h3>
+
+                <div id="qOptions" class="space-y-3">
+                    <!-- Options injected here -->
+                </div>
+
+                <div id="qExplain"
+                    class="hidden mt-4 p-3 bg-blue-50 text-blue-800 text-sm rounded-lg border border-blue-100"></div>
+
+                <button id="nextQBtn" onclick="nextQuestion()"
+                    class="hidden w-full mt-6 bg-primary hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:scale-[1.02] active:scale-95">
+                    Next Question ➜
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAGE 3: CODE -->
+    <section id="stage-code" class="stage">
+        <div class="glass-card p-1 rounded-3xl shadow-ionic max-w-sm sm:max-w-lg relative z-10 overflow-hidden">
+            <div class="bg-gray-900 p-4 text-center border-b border-gray-800">
+                <h2 class="text-gray-100 font-bold text-lg">Final Challenge</h2>
+                <p class="text-gray-500 text-xs">Java IDE v1.0</p>
+            </div>
+
+            <div class="p-4 sm:p-6 bg-white">
+                <p class="text-gray-700 mb-4 text-sm font-medium">
+                    Write a Java statement to print exactly:<br>
+                    <span class="text-primary font-bold text-lg block mt-1">Hamster I Like You</span>
+                </p>
+
+                <div class="relative group">
+                    <div
+                        class="absolute -inset-0.5 bg-gradient-to-r from-primary to-purple-600 rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200">
+                    </div>
+                    <textarea id="userCode"
+                        class="relative code-editor w-full h-32 rounded-lg p-4 focus:outline-none focus:ring-2 focus:ring-primary shadow-inner text-sm leading-relaxed"
+                        spellcheck="false" placeholder="// Type here...&#10;System.out.println(...);"></textarea>
+                </div>
+
+                <div id="codeError" class="hidden mt-3 text-red-500 text-xs font-bold flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                    <span id="errorText">Error message</span>
+                </div>
+
+                <button onclick="checkJavaCode()"
+                    class="w-full mt-6 bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg transform transition hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 10 9.87v4.263a1 1 10 1.555.832l3.197-2.132a1 1 10 0-1.664z">
+                        </path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Compile & Run
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAGE 4: CHOICE (NEW LOVE/LIKE STAGE) -->
+    <section id="stage-choice"
+        class="stage w-screen h-screen flex justify-center items-center bg-gradient-to-b from-pink-100 to-purple-200 relative overflow-hidden">
+
+        <div id="choiceContainer"
+            class="glass-card p-6 sm:p-8 rounded-3xl shadow-2xl max-w-sm sm:max-w-lg w-full sm:w-auto relative z-10 flex flex-col justify-center items-center overflow-hidden">
+
+            <!-- Header -->
+            <div class="text-center mb-10">
+                <h2 class="font-script text-3xl sm:text-4xl text-dark mb-3">Aww You Just Like Me or Love Me?</h2>
+                <p class="text-gray-600 text-lg font-bold">
+                    Just Like? Click <span class="text-red-500 font-extrabold">No</span>.<br>
+                    Love? Click <span class="text-primary font-extrabold">Yes</span>.
+                </p>
+            </div>
+
+            <!-- Buttons -->
+            <div class="relative w-full h-32 sm:h-40 flex justify-center items-center">
+                <!-- Yes Button -->
+                <button id="yesBtn" onclick="handleLoveChoice(true)"
+                    class="absolute left-1/4 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-primary hover:bg-rose-600 text-white font-bold py-3 px-6 sm:px-8 rounded-full shadow-lg transition hover:scale-[1.05] active:scale-95 z-20">
+                    Yes (Love)
+                </button>
+
+                <!-- No Button -->
+                <button id="noBtn" onmouseover="handleLoveChoice(false)" onclick="showChuss()"
+                    class="absolute right-1/4 top-1/2 transform translate-x-1/2 -translate-y-1/2 bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 sm:px-8 rounded-full shadow-lg transition duration-200 z-20 cursor-default">
+                    No (Just Like)
+                </button>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- STAGE 5: CERTIFICATE (WAS 4) -->
+    <section id="stage-cert" class="stage">
+        <div id="certCard" class="w-full max-w-sm sm:max-w-lg preserve-3d perspective-1000 opacity-0">
+            <!-- Certificate Border -->
+            <div class="bg-white p-2 rounded shadow-2xl border-8 border-yellow-400 relative overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-5"
+                    style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 20px 20px;">
+                </div>
+
+                <div class="border-4 border-double border-primary/30 p-4 sm:p-8 text-center relative z-10 bg-[#fffdf5]">
+                    <div class="text-5xl sm:text-6xl mb-2 animate-bounce">🏅</div>
+                    <h1 class="font-script text-3xl sm:text-4xl text-dark mb-1">Certificate of Excellence</h1>
+                    <div class="w-16 sm:w-24 h-1 bg-primary mx-auto mb-4 sm:mb-6 rounded-full"></div>
+
+                    <p class="text-gray-600 font-serif italic text-sm sm:text-base">This is officially awarded to the
+                        amazing</p>
+
+                    <h2 class="font-script text-4xl sm:text-5xl text-primary my-4 sm:my-6 drop-shadow-sm">Cato</h2>
+
+                    <p class="text-gray-700 leading-relaxed text-sm sm:text-base">
+                        For demonstrating exceptional cuteness and mastering basic Java syntax under pressure.
+                        <br><strong>Best Cat & Developer Award</strong>
+                    </p>
+
+                    <div
+                        class="mt-6 sm:mt-8 flex justify-between items-end text-xs text-gray-400 uppercase tracking-widest border-t pt-4">
+                        <div class="text-center">
+                            <div class="font-script text-lg sm:text-xl text-dark capitalize mb-1">My Heart</div>
+                            Signature
+                        </div>
+                        <div class="text-center">
+                            <div class="font-script text-lg sm:text-xl text-dark capitalize mb-1">Forever</div>
+                            Date
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-6 sm:mt-8 text-center">
+                <button onclick="startLoadingSequence()"
+                    class="bg-primary hover:bg-rose-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transform transition hover:scale-105 active:scale-95">
+                    Accept Award ➜
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- STAGE 6: LOADING (WAS 5) -->
+    <section id="stage-loading" class="stage">
+        <div class="text-center w-full max-w-sm sm:max-w-md">
+            <h2 class="font-script text-3xl text-primary mb-6">Calculating Love...</h2>
+            <div class="w-full bg-white h-4 rounded-full overflow-hidden shadow-inner p-1">
+                <div id="progressBar"
+                    class="h-full bg-gradient-to-r from-primary to-secondary rounded-full w-0 shadow-lg"></div>
+            </div>
+            <p class="mt-4 text-gray-500 text-sm animate-pulse">Gathering all memories...</p>
+        </div>
+    </section>
+
+    <!-- STAGE 7: ENVELOPE (WAS 6) -->
+    <section id="stage-envelope" class="stage">
+        <div class="envelope-3d-container group mx-auto" onclick="openEnvelope()">
+            <div class="envelope-body shadow-2xl relative flex justify-center">
+                <div class="envelope-pocket"></div>
+                <div id="flap" class="envelope-flap flex items-center justify-center">
+                    <div
+                        class="w-12 h-12 bg-red-800 rounded-full text-white flex items-center justify-center text-2xl border-4 border-red-900 shadow-lg mt-[-40px]">
+                        ❤️</div>
+                </div>
+                <div id="letterPreview" class="letter-preview shadow-md rounded-sm">
+                    <div class="w-full h-2 bg-gray-200 mb-2 rounded"></div>
+                    <div class="w-3/4 h-2 bg-gray-200 mb-2 rounded"></div>
+                    <div class="w-full h-2 bg-gray-200 mb-2 rounded"></div>
+                </div>
+            </div>
+        </div>
+        <p class="mt-12 text-primary font-bold animate-bounce cursor-pointer">Tap to Open</p>
+    </section>
+
+    <!-- STAGE 8: FINAL LETTER (SCROLLABLE, WAS 7) -->
+    <section id="stage-letter" class="fixed inset-0 bg-white z-50 overflow-y-auto overflow-x-hidden hidden opacity-0">
+        <div class="min-h-screen relative">
+            <!-- Parallax Hearts Background -->
+            <div id="parallaxContainer" class="absolute inset-0 pointer-events-none overflow-hidden"></div>
+
+            <div class="relative z-10 container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-xl sm:max-w-2xl">
+                <div class="bg-white/90 backdrop-blur-sm p-6 md:p-12 rounded-3xl shadow-ionic border border-white/50">
+
+                    <h1 class="font-script text-4xl sm:text-5xl text-primary mb-6 sm:mb-8 text-center leading-tight">My
+                        Sweet,Cutie Cato,</h1>
+
+                    <div class="prose text-lg text-gray-600 font-sans leading-loose">
+                        <p>
+                            You did it! You passed the game, ace'd the quiz, and proved you are a Java and my heart
+                            Queen.
+                        </p>
+                        <p>
+                            I am so incredibly proud of you, not just for this, but for everything you do. You are
+                            smart, beautiful, and my favorite person in the world.
+                        </p>
+                        <p class="text-center text-xl sm:text-2xl text-dark font-script my-6 sm:my-8">
+                            I Like You So Much! ❤️
+                        </p>
+                    </div>
+
+                    <!-- AI Section -->
+                    <div class="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t-2 border-dashed border-pink-100">
+                        <div id="aiOutput"
+                            class="hidden bg-pink-50 p-6 rounded-xl mb-6 text-center font-script text-xl sm:text-2xl text-primary border border-pink-100 shadow-sm transition-all">
+                        </div>
+
+                        <div class="flex flex-wrap justify-center gap-3 sm:gap-4">
+                            <button onclick="generatePoem(this)"
+                                class="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition">
+                                ✨ Magic Poem
+                            </button>
+                            <button onclick="generateReason(this)"
+                                class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition">
+                                ✨ Why Special?
+                            </button>
+                            <button onclick="generateLove(this)"
+                                class="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-red-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition">
+                                🎀 Need Some Love?
+                            </button>
+                            <button onclick="generateUpset(this)"
+                                class="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition">
+                                😭 Feeling Sad?
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <button onclick="window.location.reload()"
+                            class="text-gray-400 hover:text-primary text-sm underline transition">
+                            Restart Memory
+                        </button>
+                    </div>
+                </div>
+
+                <div class="h-20"></div> <!-- Spacer -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 🔊 Audio -->
+    <audio id="bg-music"
+        src="https://raw.githubusercontent.com/Dear-Hamster/Music/main/mp3/I Wanna Be Yours_5XeFesFbtLpXzIVDNQP22n.mp3"
+        loop></audio>
+
+    <!-- 🎵 Overlay -->
+    <div id="musicPopup"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 opacity-100 transition-opacity duration-700">
+
+        <!-- 🎶 Popup Box -->
+        <div class="bg-white/80 backdrop-blur-xl p-8 w-80 rounded-3xl shadow-2xl border border-primary text-center 
+              transform scale-90 opacity-0 transition-all duration-700" id="popupCard">
+
+            <div class="text-5xl mb-3 animate-bounce text-primary">🎀</div>
+
+            <h2 class="text-xl font-bold text-black">Enjoy Background Music?</h2>
+
+            <p class="text-black/80 mt-2">
+                Tap the button below to start the music.
+            </p>
+
+            <button id="playMusicBtn" class="mt-6 w-full py-3 rounded-full bg-primary text-white font-semibold text-lg 
+             shadow-lg hover:bg-primary active:scale-95 transition">
+                ▶ Play Music
+            </button>
+
+        </div>
+
+    </div>
+
+    <script src="./script.js"></script>
+    <script>
+        const popup = document.getElementById("musicPopup");
+        const popupCard = document.getElementById("popupCard");
+        const music = document.getElementById("bg-music");
+        const btn = document.getElementById("playMusicBtn");
+
+        // Smooth popup reveal
+        window.addEventListener("load", () => {
+            setTimeout(() => {
+                popupCard.classList.remove("scale-90", "opacity-0");
+                popupCard.classList.add("scale-100", "opacity-100");
+            }, 100);
+        });
+
+        btn.addEventListener("click", () => {
+            music.play().then(() => {
+                popup.classList.add("opacity-0");
+                setTimeout(() => popup.classList.add("hidden"), 700);
+            });
+        });
+    </script>
+</body>
+
+</html>

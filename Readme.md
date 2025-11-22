@@ -1,0 +1,3 @@
+# Gndi Cato 😠🫰
+
+## I made this little website to remind you😭 how special you are ✨🎀✨ and how much you make me smile every day ❤️🐈.
