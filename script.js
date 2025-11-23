@@ -490,7 +490,7 @@ function initParallaxHearts() {
 }
 
 // --- GEMINI API ---
-const apiKey = "AIzaSyCt1C_rnGzNS_VSC8SZuv31ZTjha29drMw";
+const apiKey = "AIzaSyBUDsbMhtQVJHS5llCW0Q-dUUXTIrqxxLw";
 async function callGemini(prompt) {
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     try {
@@ -535,4 +535,5 @@ async function generateUpset(btn) {
 }
 
 // Start
+
 initGame();
